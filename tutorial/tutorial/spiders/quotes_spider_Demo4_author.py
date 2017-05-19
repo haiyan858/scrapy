@@ -1,14 +1,20 @@
+# coding:utf-8
 import scrapy
 
 
-class AuthorSpider (scrapy.Spider):
-	name = "author"
-	start_urls = ['http://quotes.toscrape.com/']
+class QuotesSpiderAuthor (scrapy.Spider):
+	name = "quotesDemo_author"
+	start_urls = [
+		'http://quotes.toscrape.com/'
+	]
 
 	def parse(self, response):
+		# response.css('div.quote span a::attr(href)').extract ()
+		# follow links to author pages
 		for href in response.css ('.author + a::attr(href)').extract ():
 			yield scrapy.Request (response.urljoin (href), callback=self.parse_author)
 
+		# follow pagination links
 		next_page = response.css ('li.next a::attr(href)').extract_first ()
 		if next_page is not None:
 			next_page = response.urljoin (next_page)
@@ -23,4 +29,3 @@ class AuthorSpider (scrapy.Spider):
 			'birthdate': extract_with_css ('.author-born-date::text'),
 			'bio': extract_with_css ('.author-description::text'),
 		}
-

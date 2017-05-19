@@ -22,6 +22,9 @@ import scrapy
 # 推荐使用XPath
 
 # usage: scrapy crawl quotesDemo
+# Spider arguments are passed through the crawl command using the -a option. For example:
+# usage: scrapy crawl quotesDemo -a category=electronics
+# usage: scrapy crawl quotesDemo -o xxx.json -a tag=humor
 
 class QuotesSpider (scrapy.Spider):
 	name = "quotesDemo"
@@ -41,9 +44,20 @@ class QuotesSpider (scrapy.Spider):
 		"http://quotes.toscrape.com/page/2/",
 	]
 
+	# def parse(self, response):
+	# 	page = response.url.split ("/")[-2]
+	# 	filename = 'quotes-%s.html' % page
+	# 	with open (filename, 'wb') as f:
+	# 		f.write (response.body)
+	# 	self.log ('---->Saved file %s' % filename)
+
 	def parse(self, response):
-		page = response.url.split ("/")[-2]
-		filename = 'quotes-%s.html' % page
-		with open (filename, 'wb') as f:
-			f.write (response.body)
-		self.log ('---->Saved file %s' % filename)
+		for quote in response.css ("div.quote"):
+			yield{
+				'text' : quote.css ("span.text::text").extract_first (),
+				'author' : quote.css ("small.author::text").extract_first (),
+				'tags' : quote.css ("div.tags a.tag::text").extract (),
+			}
+
+
+
